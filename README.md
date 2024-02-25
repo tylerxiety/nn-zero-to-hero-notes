@@ -74,17 +74,17 @@ Makemore is a character-level language model that takes a text file as input and
     - kaiming_normal_ is the most popular way of init
     - We can also init the grad(mode='fan_out'), instead of activation(mode='fan_in'), choose one of them as these two don't diff too much.
     - Back in 2015 when the kaiminng normal paper published, we had to be extremely careful with the activations and grads, especially when the nn is very deep.
-- Later a number of moderm innovations (e.g. 
+- Later a number of modern innovations (e.g. 
     1. residual connections; 
     2. batch norm, layer norm, group norm; 
     3. better optimizers: adam, RMSprop) 
 
     make things more stable and well-behaved, so it became less imortant to init the networks "extactly right".
 
-# 5. Building makemore Part 4: becoming a backprop ninja
+## 5. Building makemore Part 4: becoming a backprop ninja
 skipped for now.
 
-# 6. Building makemore Part 5: Building a WaveNet, following [DeepMind WaveNet 2016](https://arxiv.org/abs/1609.03499).
+## 6. Building makemore Part 5: Building a WaveNet, following [DeepMind WaveNet 2016](https://arxiv.org/abs/1609.03499).
 - We only look at training loss in this exercise, normally we look at both the tarining and validation loss together.
 - We only implement the hierarchical architecture of the wavenet, but not the complicated forward pass (with residual and skip connections) in the paper.
 - Brief convolutions preview/hint: this use of convolutions is strictly for efficiency. It does not change the model we implemented here. Efficiency: 1) the for loop is not outside in python, but inside of the kernals in CUDA; 2) values in nodes are reused for each 'linear filter'.
