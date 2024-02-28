@@ -101,3 +101,16 @@ skipped for now.
 - In an "encoder" attention block just delete the single line that does masking with `tril`, allowing all tokens to communicate. This block here is called a "decoder" attention block because it has triangular masking, and is usually used in autoregressive settings, like language modeling.
 - "self-attention" just means that the keys and values are produced from the same source as queries. In "cross-attention", the queries still get produced from x, but the keys and values come from some other, external source (e.g. an encoder module)
 - "Scaled" attention additional divides `wei` by 1/sqrt(head_size). This makes it so when input Q,K are unit variance, wei will be unit variance too and Softmax will stay diffuse and not saturate too much. The scaling is used just to control the variance at init. Illustration below
+
+- Self-attention is for the tokens to do communication, once they have gathered the information, they need to 'think' on that information individually, so feedfoward layer right after self-attention layer. 
+- Communication using attention, followed by computation using feedfoward,on all the tokens independently. We use block to intersperse communication and computation.
+- Deep neural nets suffer from optimization issues. 2 optimizations taht dramatically help with the depth of networks and make sure that the networks remian optimizable: 
+    1.  skip connections/residual connections ([kaimin et al 2015](https://arxiv.org/abs/1512.03385)): 
+        - Add the input that before the computation of this layer: `x = x + self.ffwd(x)`
+        - This is useful because addition distributes gradients equally to both of its branches. 
+        - The residual blocks are initialized in the beginning so they contribute very little, if anything, to the residual pathway, but during optimization they 'come online' over time and start to contribute.
+    2. layer norm ([Geoffrey E. Hinton et al 2016](https://arxiv.org/abs/1607.06450))
+        - Similar to batch norm
+        - Where to place it: one of the very few changes people now commonly used that slightly departs from the original transformer paper. In the original paper, layer norm is applied after the transfotmation. Now it's more common to apply the layer norm before the transfotmation, which is called pre-norm formulation.
+        - Kind of like a per token transfotmation that normalizes the features and makes them unit gaussian at initialization. But of course because there are trainable parameters gamma and beta inside the layer norm, the layer norm eventually create outputs that might not be unit gaussian, determined by optimization.
+
