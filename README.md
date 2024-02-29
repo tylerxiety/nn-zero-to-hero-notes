@@ -100,7 +100,7 @@ skipped for now.
 - Each example across batch dimension is of course processed completely independently and never "talk" to each other. So in the above example, there 4 groups of 8 nodes processing independently.
 - In an "encoder" attention block just delete the single line that does masking with `tril`, allowing all tokens to communicate. This block here is called a "decoder" attention block because it has triangular masking, and is usually used in autoregressive settings, like language modeling.
 - "self-attention" just means that the keys and values are produced from the same source as queries. In "cross-attention", the queries still get produced from x, but the keys and values come from some other, external source (e.g. an encoder module)
-- "Scaled" attention additional divides `wei` by 1/sqrt(head_size). This makes it so when input Q,K are unit variance, wei will be unit variance too and Softmax will stay diffuse and not saturate too much. The scaling is used just to control the variance at init. Illustration below
+- "Scaled" attention additional divides `wei` by 1/sqrt(head_size). This makes it so when input Q,K are unit variance, wei will be unit variance too and Softmax will stay diffuse and not saturate too much. The scaling is used just to control the variance at init. 
 
 - Self-attention is for the tokens to do communication, once they have gathered the information, they need to 'think' on that information individually, so feedfoward layer right after self-attention layer. 
 - Communication using attention, followed by computation using feedfoward,on all the tokens independently. We use block to intersperse communication and computation.
@@ -113,4 +113,23 @@ skipped for now.
         - Similar to batch norm
         - Where to place it: one of the very few changes people now commonly used that slightly departs from the original transformer paper. In the original paper, layer norm is applied after the transfotmation. Now it's more common to apply the layer norm before the transfotmation, which is called pre-norm formulation.
         - Kind of like a per token transfotmation that normalizes the features and makes them unit gaussian at initialization. But of course because there are trainable parameters gamma and beta inside the layer norm, the layer norm eventually create outputs that might not be unit gaussian, determined by optimization.
+- Dropout ([Hinton et al 2014](https://dl.acm.org/doi/pdf/10.5555/2627435.2670313)):
+    - A regularization technique: randomly drop some neurons to zero in every forward and backward path, and train without them. It's like training an ensemble of sub networks. During test time everything is fully enabled so all of the sub networks are merged into an ensemble.
+    - Where to place it:
+        1. Can add dropout layer at the end of the FeedFoward right before going back into the residual pathway.
+        2. Can add dropout layer at the end of the MultiHeadAttention right after the projection layer before going back into the residual pathway.
+        3. Can add dropout layer when calculating the "affinities" in the Head after the softmax layer. It randomly prevent some nodes from communicating after the softmax. 
 
+- Some hyperparameters:
+    - `n_embd = 384`, `n_head = 6`, so every head is 384/6=64 dimensional as a standard.
+- nanoGPT: model is almost identical to the one in this tutorial, except some parts, e.g.:
+    1. using gelu, same as GPT2
+    2. separate n_head as 4th dimension, so that all the heads are treated as batch dimenison as well (inside CausalSelfAttention), which is more efficient.
+    3. etc
+    4. Check out the train.py for techniques in  weigjht decay and saving and loading checkpoints.
+
+- Notes for the python script:
+    - Device option: cuda, cpu. Make sure to move the input data and model to the device, and generate outputs from the device.
+    - eval_itrs and estimate_loss func: the loss of each batch is noisy because each batch can be more or less lucky. So estimate_loss averages losses of multiple batches, gives a more accurate measurement of the current loss.
+    - make sure the correct mode of the model, i.e., training mode or eval(inference) mode, because some layers (e.g., dropout layes, batch norm layers, etc.) will have different behaviors at training or inference time.
+    - call context manager torch.no_grad() when grads will not be used, so it will be more memory efficient.
