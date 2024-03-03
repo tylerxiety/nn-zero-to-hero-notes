@@ -165,3 +165,36 @@ skipped for now.
         - GPT4 has FIM_PREFIX and more, FIM means [fill in the middle](https://arxiv.org/pdf/2207.14255.pdf)
     - When adding special tokens, we need do some model surgery to the transformer, 
 e.g., extend the embedding matrix for the vocab and extend the final layer of the transformer.
+- sentencepiece (particulary the library)
+    - turn off a lot of numalization rules, because you want to keep the raw data as much as possible.
+    - sentencepiece is an introduced concept and in languages, the boudry between sentences is often quite blurry.
+- Vocab size
+    - Q: 
+        - what should be vocab size?
+        - how can I increase vocab size?
+    - A: let's see. Reminder: [gpt.py](https://github.com/karpathy/ng-video-lecture/blob/master/gpt.py) from before.
+    - What should be vocab size?
+        - The vocab size hyperparameter is used in the embedding table and the final layer of the transformer as the output of the probability of each vocab as the next token. So larger vocab size means:
+            - more computation needed
+            - larger number of parameters, fewer number of examples per token, higher chance of underfitting
+            - shorter sequences so attending more text in transformer which is nice, but may also cause squishing too much information into a single token and the forward pass of the transformer may not enogh to process the information appropriately.
+        - So right now it's a empirical hyperparameter and typical around high 10k or 100k.
+
+    - How to increase vocab size?
+    - We want to take a pretrained model and increae the vocab size, e.g., 
+        - when finetuning chatgpt, we want to introduce more special token to maintain the metadata of the structure of conversation objects between a user and an assistant.
+        - introduce more special tokens for using tools like browser.
+    - Can be done fairly easily:
+        - freeze the base model
+        - resize the embedding table and the output layer so introduce more parameters, but only train these new parameters (with random init). 
+
+- There is an entirely new design space in terms of introducing new tokens. One exsample is [learning to compress prompts](https://arxiv.org/pdf/2304.08467.pdf), only training token embeddings so that introducing new tokens that is compressed for long prompts, which is one of the parameter efficient finetuning techniques.
+
+- Multimodalities: people start to converge towrads that not change the transformer architecture and just tokenize the input domains and use the tokens the same as text tokens. e.g., 
+  - [VQGAN](https://arxiv.org/pdf/2012.09841.pdf): 
+    - chunk an image into integers, as tokens of the image
+    - can be hard tokens and soft tokens where you do require tokens to be discrete, but do force these representations to go throug bottlenecks like in autoencoders
+  - [sora](https://openai.com/research/video-generation-models-as-world-simulators)
+    - chunk videos into tokens
+    - either process discrete tokens with autorepressive models or soft tokens with difusion models.
+
