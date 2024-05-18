@@ -139,13 +139,13 @@ skipped for now.
 - Tokenization :( Why we are doing all of this and wht this is so gross. Tokenization is at the heart of much weirdness of LLMs. Do not brush it off.
     - Why can't LLM spell words? **Tokenization**.
     - Why can't LLM do super simple string processing tasks like reversing a string? **Tokenization**.
-    - Why is LLM worse at non-English languages (e.g. Japanese)? **Tokenization**.
+    - Why is LLM worse at non-English languages (e.g. Japanese)? **Tokenization**. Tokenizer is not sufficiently trained on non-English data. LLM sees less non-English data during training. And non-English style language may split into more tokens (less merges during Tokenization).
     - Why is LLM bad at simple arithmetic? **Tokenization**.
     - Why did GPT-2 have more than necessary trouble coding in Python? **Tokenization**.
-    - Why did my LLM abruptly halt when it sees the string "<|endoftext|>"? **Tokenization**.
+    - Why did my LLM abruptly halt when it sees the string ? "<|endoftext|>"**Tokenization**.
     - What is this weird warning I get about a "trailing whitespace"? **Tokenization**.
     - Why the LLM break if I ask it about "SolidGoldMagikarp"? **Tokenization**.
-    - Why should I prefer to use YAML over JSON with LLMs? **Tokenization**.
+    - Why should I prefer to use YAML over JSON with LLMs? **Tokenization**. YAML is more efficient (less token usage)
     - Why is LLM not actually end-to-end language modeling? **Tokenization**.
     - What is the real root of suffering? **Tokenization**.
 - Byte level encodeing paper: [GPT2 2018](https://d4mucfpksywv.cloudfront.net/better-language-models/language_models_are_unsupervised_multitask_learners.pdf), in the Input Representation section.
@@ -197,4 +197,14 @@ e.g., extend the embedding matrix for the vocab and extend the final layer of th
   - [sora](https://openai.com/research/video-generation-models-as-world-simulators)
     - chunk videos into tokens
     - either process discrete tokens with autorepressive models or soft tokens with difusion models.
+- Interesting 'unstable' token handling in tiktoken rust code
+- Recommendations from Andrej for your own application:
+    - Maybe you can just re-use the GPT-4 tokens and tiktoken?
+    - If you're training a vocab, ok to use BPE with sentencepiece. Careful with the million settings. (But sentencepiece is inferior to tiktoken in terms of algorithm.)
+    - Switch to [minbpe](https://github.com/karpathy/minbpe) once it is as efficient as sentencepiece :). minbpe is tiktoken with training APIs.
+    - Or check it out [Huggingface Tokenizer](https://huggingface.co/docs/transformers/main_classes/tokenizer), the algorithm is very similar to sentencepiece.
 
+
+# -1. Conponents and Papers
+1. MLP
+- 
